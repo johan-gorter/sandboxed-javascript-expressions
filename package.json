@@ -2,15 +2,18 @@
   "name": "sandboxed-javascript-expressions",
   "version": "0.9.0",
   "description": "Allows evaluating untrusted javascript expressions in a nodejs server and in browsers",
-  "main": "index.js",
+  "module": "./dist/index.js",
+  "main": "./dist/sandboxed-javascript-expressions.cjs.js",
+  "browser": "./dist/sandboxed-javascript-expressions.umd.js",
+  "typings": "./dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tsa ci",
+    "dist": "tsc -p ./src/tsconfig.json && rollup -c",
     "prepublishOnly": "tsa clean && npm -s run dist",
     "assist": "tsa assist",
     "release": "tsa release",
     "fix": "tsa fix",
     "clean": "tsa clean",
-    "dist": "tsc -p ./src/tsconfig.json",
     "ci": "tsa ci",
     "coverage-show": "opn build/coverage/index.html"
   },
@@ -33,6 +36,7 @@
   },
   "homepage": "https://github.com/johan-gorter/sandboxed-javascript-expressions#readme",
   "devDependencies": {
+    "rollup": "^1.13.1",
     "typescript-assistant": "^0.39.5"
   },
   "nyc": {
