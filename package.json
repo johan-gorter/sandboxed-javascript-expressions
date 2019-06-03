@@ -12,11 +12,7 @@
     "clean": "tsa clean",
     "dist": "tsc -p ./src/tsconfig.json",
     "ci": "tsa ci",
-    "coverage-show": "opn build/coverage/index.html",
-    "precommit": "tsa pre-commit",
-    "prepush": "npm run dist && tsa pre-push",
-    "postcheckout": "tsa post-checkout || exit 0",
-    "postmerge": "tsa post-merge || exit 0"
+    "coverage-show": "opn build/coverage/index.html"
   },
   "repository": {
     "type": "git",
@@ -78,6 +74,14 @@
         75,
         100
       ]
+    }
+  },
+  "husky": {
+    "hooks": {
+      "post-checkout": "tsa post-checkout || exit 0",
+      "post-merge": "tsa post-merge || exit 0",
+      "pre-commit": "tsa pre-commit",
+      "pre-push": "npm run dist && tsa pre-push"
     }
   }
 }
