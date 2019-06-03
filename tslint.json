@@ -1,0 +1,13 @@
+{
+  "extends": [
+    /* You can pick one (1) of the following */
+    /* TSLINT: */
+    /* "tslint:latest" */
+    /* MICROSOFT: */
+    /* "tslint-microsoft-contrib" */
+    /* AFAS: */
+    "./node_modules/typescript-assistant/tslint-afas.json"
+  ],
+  "rules": {
+  }
+}
