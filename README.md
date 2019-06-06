@@ -1,21 +1,32 @@
 # sandboxed-javascript-expressions
 Allows evaluating untrusted javascript expressions in a nodejs server and in browsers
 
-### BETA
-Still being tested. Please do not use in production yet.
+### Usage
+```js
+// Expressions are compiled to a function for optimum performance.
+let expression = compileJsExpression('Math.atan(deltaX / deltaY) * 180 / Math.PI'); // formula calculates an angle
+
+// Here we specify the only variables that we are going to expose to the expression.
+let scope = {
+  Math,
+  deltaX: 10,
+  deltaY: 10
+};
+
+// Expressions interact with a JsExpressionContext API for ultimate flexibility. This is the default implementation.
+let expressionContext = createDefaultJsExpressionContext(scope);
+
+// Evaluate the expression
+let outcome = expression(expressionContext);
+```
 
 ### Features
 - Uses native eval, so it is very fast
-- Very simple and lightweight library
+- Very tiny footprint (<2 Kb gzipped)
 - Tested extensively for security
-
-### API
-Expressions are evaluated using variables and functions you provide. You can also define how property accessors work.
-
-### Example
-Work in progress
 
 ### What is supported
 - Just expressions, so no statements
-- String literals using single quotes
-- Lambda functions without parameters (see the tests on how to cope with this limitation)
+- String literals using single quotes only (no double quotes or interpolation)
+- Lambda functions without parameters (see `example-tests.ts` on how to deal with this limitation)
+- No regular expression literals

@@ -12,20 +12,20 @@ let isDigit = (char: string) => {
 };
 
 let isExpression = (char: string) => {
-  return /^[?:+\-*()%^=<>!&|, ]$/.test(char);
+  return /^[?:+\-*/()%^=<>!&|, ]$/.test(char);
 };
 
 export type CompiledJsExpression = ((context: JsExpressionContext) => any);
 
 export let compileJsExpression = (expression: string): CompiledJsExpression => {
-  let mode: 'normal' | 'normalAllowDot' | 'word' | 'path' | 'string' | 'escapedInString' | 'number' | 'decimalPart' = 'normal';
+  let mode: 'normal' | 'normalAfterBracket' | 'word' | 'path' | 'string' | 'escapedInString' | 'number' | 'decimalPart' = 'normal';
   let safeExpression = 'return ';
   let invalidChar = (char: string) => {
     throw new Error(`Invalid char at: ${safeExpression}${char}`);
   };
   for (let char of expression) {
     switch (mode) {
-      case 'normalAllowDot':
+      case 'normalAfterBracket':
         if (char === '.') {
           safeExpression += `.accessProperty('`;
           mode = 'path';
@@ -53,10 +53,12 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
           safeExpression += `.accessProperty(`;
         } else if (char === ']') {
           safeExpression += `)`;
+        } else if (char === '/') {
+          safeExpression += ` /1/ `; // Make sure / cannot be used to form a regex, just to do division
         } else if (isExpression(char)) {
           safeExpression += char;
           if (char === ')') {
-            mode = 'normalAllowDot';
+            mode = 'normalAfterBracket';
           }
         } else if (char === '\'') {
           safeExpression += char;
@@ -113,14 +115,12 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
       case 'number':
         if (char === '.') {
           mode = 'decimalPart';
-        } else if (isDigit(char)) {
-          mode = 'escapedInString';
         } else if (isExpression(char)) {
           mode = 'normal';
         } else if (char === ']') {
           safeExpression += `)`;
           mode = 'normal';
-        } else {
+        } else if (!isDigit(char)) {
           invalidChar(char);
         }
         safeExpression += char;
@@ -146,7 +146,7 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
   }
   if (mode === 'path' || mode === 'word') {
     safeExpression += '\')';
-  } else if (mode !== 'normal' && mode !== 'normalAllowDot' && mode !== 'number' && mode !== 'decimalPart') {
+  } else if (mode !== 'normal' && mode !== 'normalAfterBracket' && mode !== 'number' && mode !== 'decimalPart') {
     throw new Error(`Invalid end of expression: ${expression}`);
   }
   let executeFunction = new Function('interpret', safeExpression);
