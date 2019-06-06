@@ -1,6 +1,6 @@
 {
   "name": "sandboxed-javascript-expressions",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Allows evaluating untrusted javascript expressions in a nodejs server and in browsers",
   "module": "./dist/index.js",
   "main": "./dist/sandboxed-javascript-expressions.cjs.js",
