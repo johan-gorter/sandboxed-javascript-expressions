@@ -152,7 +152,7 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
   let executeFunction = new Function('interpret', safeExpression);
   return (context) => {
     let wrapPropertyAccessors = (wrapped: any) => {
-      if (typeof wrapped === 'string' || typeof wrapped === 'boolean' || typeof wrapped === 'number') {
+      if (typeof wrapped === 'string' || typeof wrapped === 'boolean' || typeof wrapped === 'number' || wrapped === undefined || wrapped === null) {
         return wrapped;
       } else {
         return {
