@@ -18,7 +18,7 @@ export let setupEscape = () => {
 };
 
 export let cleanupEscape = () => {
-  delete (Object.prototype as any).s;
+  delete (Object.prototype as any).esc;
 };
 
 /**
@@ -70,7 +70,7 @@ export let createTestSession = (context: JsExpressionContext) => {
             encounteredResults.add(result);
           }
         } catch (err) {
-          expect(err.message).to.not.equal('broken', expression);
+          expect(err.message).to.not.equal('escaped', expression);
           if (!encounteredErrorMessages.has(err.message)) {
             logger.info(`New error encountered: ${err.message}, expression: ${expression}`);
             encounteredErrorMessages.add(err.message);

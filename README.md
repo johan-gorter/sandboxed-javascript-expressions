@@ -27,6 +27,10 @@ let outcome = expression(expressionContext);
 
 ### What is supported
 - Just expressions, so no statements
+- Arrays
 - String literals using single quotes only (no double quotes or interpolation)
 - Lambda functions without parameters (see `example-tests.ts` on how to deal with this limitation)
-- No regular expression literals
+
+### What is not supported
+- Regular expression literals
+- Object literals (curly brackets)

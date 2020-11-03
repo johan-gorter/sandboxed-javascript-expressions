@@ -18,51 +18,47 @@ let isExpression = (char: string) => {
 export type CompiledJsExpression = ((context: JsExpressionContext) => any);
 
 export let compileJsExpression = (expression: string): CompiledJsExpression => {
-  let mode: 'normal' | 'normalAfterBracket' | 'word' | 'path' | 'string' | 'escapedInString' | 'number' | 'decimalPart' = 'normal';
+  let mode: 'clean' | 'cleanOrChain' | 'word' | 'path' | 'string' | 'escapedInString' | 'number' | 'decimalPart' = 'clean';
   let safeExpression = 'return ';
   let invalidChar = (char: string) => {
     throw new Error(`Invalid char at: ${safeExpression}${char}`);
   };
   for (let char of expression) {
     switch (mode) {
-      case 'normalAfterBracket':
-        if (char === '.') {
-          safeExpression += `.accessProperty('`;
-          mode = 'path';
-        } else if (char === '[') {
-          safeExpression += `.accessProperty(`;
-          mode = 'normal';
-        } else if (char === ']') {
-          safeExpression += `)`;
-          mode = 'normal';
-        } else if (isExpression(char)) {
-          mode = 'normal';
-          safeExpression += char;
-        } else {
-          invalidChar(char);
-        }
-        break;
-      case 'normal':
+      case 'clean':
+      case 'cleanOrChain':
         if (isWord(char)) {
-          safeExpression += `interpret('${char}`;
+          safeExpression += `interpret("${char}`;
           mode = 'word';
         } else if (isDigit(char)) {
           safeExpression += char;
           mode = 'number';
         } else if (char === '[') {
-          safeExpression += `.accessProperty(`;
+          if (mode === 'clean') {
+            safeExpression += `createArray(`;
+          } else {
+            safeExpression += `.accessProperty(`;
+            mode = 'clean';
+          }
         } else if (char === ']') {
           safeExpression += `)`;
+          mode = 'cleanOrChain';
         } else if (char === '/') {
           safeExpression += ` /1/ `; // Make sure / cannot be used to form a regex, just to do division
+          mode = 'clean';
         } else if (isExpression(char)) {
           safeExpression += char;
           if (char === ')') {
-            mode = 'normalAfterBracket';
+            mode = 'cleanOrChain';
+          } else {
+            mode = 'clean';
           }
         } else if (char === '\'') {
           safeExpression += char;
           mode = 'string';
+        } else if (char === '.' && mode === 'cleanOrChain') {
+          safeExpression += `.accessProperty("`;
+          mode = 'path';
         } else {
           invalidChar(char);
         }
@@ -71,17 +67,21 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
         if (isWord(char) || isDigit(char)) {
           safeExpression += char;
         } else if (char === '.') {
-          safeExpression += `').accessProperty('`;
+          safeExpression += `").accessProperty("`;
           mode = 'path';
         } else if (isExpression(char)) {
-          safeExpression += `')${char}`;
-          mode = 'normal';
+          safeExpression += `")${char}`;
+          if (char === ')') {
+            mode = 'cleanOrChain';
+          } else {
+            mode = 'clean';
+          }
         } else if (char === '[') {
-          safeExpression += `').accessProperty(`;
-          mode = 'normal';
+          safeExpression += `").accessProperty(`;
+          mode = 'clean';
         } else if (char === ']') {
-          safeExpression += `'))`;
-          mode = 'normal';
+          safeExpression += `"))`;
+          mode = 'cleanOrChain';
         } else {
           invalidChar(char);
         }
@@ -90,23 +90,23 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
         if (isWord(char) || isDigit(char)) {
           safeExpression += char;
         } else if (char === '.') {
-          safeExpression += `').accessProperty('`;
+          safeExpression += `").accessProperty("`;
         } else if (isExpression(char)) {
-          safeExpression += `')${char}`;
-          mode = 'normal';
+          safeExpression += `")${char}`;
+          mode = 'clean';
         } else if (char === '[') {
-          safeExpression += `.accessProperty(`;
-          mode = 'normal';
+          safeExpression += `").accessProperty(`;
+          mode = 'clean';
         } else if (char === ']') {
-          safeExpression += `)`;
-          mode = 'normal';
+          safeExpression += `")`;
+          mode = 'cleanOrChain';
         } else {
           invalidChar(char);
         }
         break;
       case 'string':
         if (char === '\'') {
-          mode = 'normal';
+          mode = 'clean';
         } else if (char === '\\') {
           mode = 'escapedInString';
         }
@@ -114,23 +114,26 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
         break;
       case 'number':
         if (char === '.') {
+          safeExpression += char;
           mode = 'decimalPart';
         } else if (isExpression(char)) {
-          mode = 'normal';
+          safeExpression += char;
+          mode = 'clean';
         } else if (char === ']') {
           safeExpression += `)`;
-          mode = 'normal';
-        } else if (!isDigit(char)) {
+          mode = 'cleanOrChain';
+        } else if (isDigit(char)) {
+          safeExpression += char;
+        } else {
           invalidChar(char);
         }
-        safeExpression += char;
         break;
       case 'decimalPart':
         if (isExpression(char)) {
-          mode = 'normal';
+          mode = 'clean';
         } else if (char === ']') {
           safeExpression += `)`;
-          mode = 'normal';
+          mode = 'clean';
         } else if (!isDigit(char)) {
           invalidChar(char);
         }
@@ -145,34 +148,48 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
     }
   }
   if (mode === 'path' || mode === 'word') {
-    safeExpression += '\')';
-  } else if (mode !== 'normal' && mode !== 'normalAfterBracket' && mode !== 'number' && mode !== 'decimalPart') {
+    safeExpression += '")';
+  } else if (mode !== 'clean' && mode !== 'cleanOrChain' && mode !== 'number' && mode !== 'decimalPart') {
     throw new Error(`Invalid end of expression: ${expression}`);
   }
-  let executeFunction = new Function('interpret', safeExpression);
+  let executeFunction = new Function('interpret', 'createArray', safeExpression);
   return (context) => {
     let wrapPropertyAccessors = (wrapped: any) => {
-      if (typeof wrapped === 'string' || typeof wrapped === 'boolean' || typeof wrapped === 'number' || wrapped === undefined || wrapped === null) {
+      if (typeof wrapped === 'string' || typeof wrapped === 'function' || typeof wrapped === 'boolean'
+        || typeof wrapped === 'number' || wrapped === undefined || wrapped === null) {
         return wrapped;
       } else {
         return {
           wrapped,
-          accessProperty: (propertyName: string) => context.accessProperty(wrapped, propertyName)
+          accessProperty: (propertyName: string) => wrapPropertyAccessors(context.accessProperty(wrapped, propertyName))
         };
       }
     };
-    let interpretFunction = (variableOrFunction: string) => {
+
+    let result = executeFunction(interpret, createArray);
+    if (isJsExpressionWrappedValue(result)) {
+      return result.wrapped;
+    }
+    return result;
+
+    function interpret(variableOrFunction: string) {
       let value = context.getValue(variableOrFunction);
       if (typeof value === 'function') {
         return (...args: any[]) => wrapPropertyAccessors(value(...args));
       } else {
         return wrapPropertyAccessors(value);
       }
-    };
-    let result = executeFunction(interpretFunction);
-    if (isJsExpressionWrappedValue(result)) {
-      return result.wrapped;
     }
-    return result;
+
+    function createArray(...args: unknown[]) {
+      return {
+        wrapped: args.map(arg => isJsExpressionWrappedValue(arg) ? arg.wrapped : arg),
+        accessProperty(index: unknown) {
+          if (typeof index === 'number') {
+            return args[index];
+          }
+        }
+      };
+    }
   };
 };

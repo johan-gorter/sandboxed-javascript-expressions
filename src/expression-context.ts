@@ -3,13 +3,14 @@
  */
 export interface JsExpressionContext {
   /**
-   * This method is used to provide the value for a variable to the expression. Only expose objects here that may be accessed by the expression.
+   * This method is used to provide the value for a variable to the expression.
+   * Only expose objects, values and functions here that may be used by the expression.
    */
   getValue(variableOrFunctionName: string): any;
 
   /**
-   * This method may be implemented to access properties on objects in the expression (like Math.abs).
-   * WARNING: Do not use `return on[propertyName]`, because it leaks things like Object.constructor which can be used to escape the sandbox.
+   * This method is used to access properties on objects in the expression (like Math.abs).
+   * WARNING: Do not use `return on[propertyName]`, because this leaks things like `Object.constructor` which can be used to escape the sandbox.
    */
   accessProperty(on: any, propertyName: string): any;
 }
