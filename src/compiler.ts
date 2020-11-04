@@ -18,141 +18,98 @@ let isExpression = (char: string) => {
 export type CompiledJsExpression = ((context: JsExpressionContext) => any);
 
 export let compileJsExpression = (expression: string): CompiledJsExpression => {
-  let mode: 'clean' | 'cleanOrChain' | 'word' | 'path' | 'string' | 'escapedInString' | 'number' | 'decimalPart' = 'clean';
+  let mode: 'clean' | 'cleanOrChain' | 'word' | 'string' | 'escapedInString' | 'number' | 'decimalPart' = 'clean';
   let safeExpression = 'return ';
   let invalidChar = (char: string) => {
     throw new Error(`Invalid char at: ${safeExpression}${char}`);
   };
   for (let char of expression) {
-    switch (mode) {
-      case 'clean':
-      case 'cleanOrChain':
-        if (isWord(char)) {
-          safeExpression += `interpret("${char}`;
-          mode = 'word';
-        } else if (isDigit(char)) {
-          safeExpression += char;
-          mode = 'number';
-        } else if (char === '[') {
-          if (mode === 'clean') {
-            safeExpression += `createArray(`;
-          } else {
-            safeExpression += `.accessProperty(`;
-            mode = 'clean';
-          }
-        } else if (char === ']') {
-          safeExpression += `)`;
-          mode = 'cleanOrChain';
-        } else if (char === '/') {
-          safeExpression += ` /1/ `; // Make sure / cannot be used to form a regex, just to do division
-          mode = 'clean';
-        } else if (isExpression(char)) {
-          safeExpression += char;
-          if (char === ')') {
-            mode = 'cleanOrChain';
-          } else {
-            mode = 'clean';
-          }
-        } else if (char === '\'') {
-          safeExpression += char;
-          mode = 'string';
-        } else if (char === '.' && mode === 'cleanOrChain') {
-          safeExpression += `.accessProperty("`;
-          mode = 'path';
-        } else {
-          invalidChar(char);
-        }
-        break;
-      case 'word':
-        if (isWord(char) || isDigit(char)) {
-          safeExpression += char;
-        } else if (char === '.') {
-          safeExpression += `").accessProperty("`;
-          mode = 'path';
-        } else if (isExpression(char)) {
-          safeExpression += `")${char}`;
-          if (char === ')') {
-            mode = 'cleanOrChain';
-          } else {
-            mode = 'clean';
-          }
-        } else if (char === '[') {
-          safeExpression += `").accessProperty(`;
-          mode = 'clean';
-        } else if (char === ']') {
-          safeExpression += `"))`;
-          mode = 'cleanOrChain';
-        } else {
-          invalidChar(char);
-        }
-        break;
-      case 'path':
-        if (isWord(char) || isDigit(char)) {
-          safeExpression += char;
-        } else if (char === '.') {
-          safeExpression += `").accessProperty("`;
-        } else if (isExpression(char)) {
-          safeExpression += `")${char}`;
-          mode = 'clean';
-        } else if (char === '[') {
-          safeExpression += `").accessProperty(`;
-          mode = 'clean';
-        } else if (char === ']') {
-          safeExpression += `")`;
-          mode = 'cleanOrChain';
-        } else {
-          invalidChar(char);
-        }
-        break;
-      case 'string':
-        if (char === '\'') {
-          mode = 'clean';
-        } else if (char === '\\') {
-          mode = 'escapedInString';
-        }
+    let backToClean = mode === 'word' ? '")' : '';
+    if (mode === 'string') {
+      if (char === '\'') {
+        mode = 'clean';
+      } else if (char === '\\') {
+        mode = 'escapedInString';
+      }
+      safeExpression += char;
+    } else if (mode === 'escapedInString') {
+      safeExpression += char;
+      mode = 'string';
+    } else if (char === ']') {
+      safeExpression += `${backToClean})`;
+      mode = 'cleanOrChain';
+    } else if (mode === 'number') {
+      if (char === '.') {
         safeExpression += char;
-        break;
-      case 'number':
-        if (char === '.') {
-          safeExpression += char;
-          mode = 'decimalPart';
-        } else if (isExpression(char)) {
-          safeExpression += char;
-          mode = 'clean';
-        } else if (char === ']') {
-          safeExpression += `)`;
-          mode = 'cleanOrChain';
-        } else if (isDigit(char)) {
-          safeExpression += char;
-        } else {
-          invalidChar(char);
-        }
-        break;
-      case 'decimalPart':
-        if (isExpression(char)) {
-          mode = 'clean';
-        } else if (char === ']') {
-          safeExpression += `)`;
-          mode = 'clean';
-        } else if (!isDigit(char)) {
-          invalidChar(char);
-        }
+        mode = 'decimalPart';
+      } else if (isExpression(char)) {
         safeExpression += char;
-        break;
-      case 'escapedInString':
+        mode = 'clean';
+      } else if (isDigit(char)) {
+        safeExpression += char;
+      } else {
+        invalidChar(char);
+      }
+    } else if (mode === 'decimalPart') {
+      if (isExpression(char)) {
+        mode = 'clean';
+      } else if (!isDigit(char)) {
+        invalidChar(char);
+      }
+      safeExpression += char;
+    } else if ((char === '.') && (mode !== 'clean')) {
+      // dots are potentially dangerous, they always need to be replaced
+      safeExpression += `${backToClean}.accessProperty("`;
+      mode = 'word';
+    } else if (char === '[') {
+      // another source of danger, replace these as well
+      if (mode === 'clean') {
+        safeExpression += `createArray(`;
+      } else {
+        safeExpression += `${backToClean}.accessProperty(`;
+        mode = 'clean';
+      }
+    } else if (char === '/') {
+      safeExpression += `${backToClean} /1/ `; // Make sure / cannot be used to form a regex, just to do division
+      mode = 'clean';
+    } else if (isExpression(char)) {
+      safeExpression += backToClean;
+      safeExpression += char;
+      if (char === ')') {
+        mode = 'cleanOrChain';
+      } else {
+        mode = 'clean';
+      }
+    } else if (mode === 'word') {
+      if (isWord(char) || isDigit(char)) {
+        safeExpression += char;
+      } else {
+        invalidChar(char);
+      }
+    } else {
+      // mode === 'clean' || mode === 'cleanOrChain'
+      if (isWord(char)) {
+        safeExpression += `interpret("${char}`;
+        mode = 'word';
+      } else if (isDigit(char)) {
+        safeExpression += char;
+        mode = 'number';
+      } else if (char === '\'') {
         safeExpression += char;
         mode = 'string';
-        break;
-      default:
+      } else {
         invalidChar(char);
+      }
     }
   }
-  if (mode === 'path' || mode === 'word') {
+  if (mode === 'word') {
     safeExpression += '")';
   } else if (mode !== 'clean' && mode !== 'cleanOrChain' && mode !== 'number' && mode !== 'decimalPart') {
     throw new Error(`Invalid end of expression: ${expression}`);
   }
+
   let executeFunction = new Function('interpret', 'createArray', safeExpression);
+
   return (context) => {
     let wrapPropertyAccessors = (wrapped: any) => {
       if (typeof wrapped === 'string' || typeof wrapped === 'function' || typeof wrapped === 'boolean'

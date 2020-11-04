@@ -1,4 +1,8 @@
-# sandboxed-javascript-expressions
+# TODO
+- Switch to double quotes
+- Regex example
+
+# Sandboxed javascript expressions
 Allows evaluating untrusted javascript expressions in a nodejs server and in browsers
 
 ### Usage
@@ -20,17 +24,17 @@ let expressionContext = createDefaultJsExpressionContext(scope);
 let outcome = expression(expressionContext);
 ```
 
+Only expressions are supported, so no assignments, code blocks, etc.
+
 ### Features
 - Uses native eval, so it is very fast
 - Very tiny footprint (<2 Kb gzipped)
 - Tested extensively for security
+- Custom functionality can be provided using helper functions and objects
 
-### What is supported
-- Just expressions, so no statements
-- Arrays
-- String literals using single quotes only (no double quotes or interpolation)
-- Lambda functions without parameters (see `example-tests.ts` on how to deal with this limitation)
-
-### What is not supported
-- Regular expression literals
-- Object literals (curly brackets)
+### Some limitations:
+- String literals must use double quotes (no double quotes or interpolation)
+- Regular expressions cannot use the literal notation
+- Lambda functions cannot have parameters (see `example-tests.ts` on how to deal with this limitation)
+- You cannot access functions on an object's prototype (like `"".substr(1)`). This is by design and you can use helper functions to access them.
+- Object literals are not yet supported. Support can be added easily if the keys require quotes (JSON style).
