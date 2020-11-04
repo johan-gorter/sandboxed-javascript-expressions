@@ -7,7 +7,7 @@ import { expect } from 'chai';
 describe('sandbox', () => {
   it('cannot escape the sandbox by using a regular expression', () => {
     setupEscape();
-    expect(() => compileJsExpression('/\'/.esc(/\'/)')).to.throw();
+    expect(() => compileJsExpression('/"/.esc(/"/)')).to.throw();
     cleanupEscape();
   });
 

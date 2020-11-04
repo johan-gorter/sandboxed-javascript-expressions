@@ -31,7 +31,7 @@ export let recognizedTokens: string[];
  */
 export let dangerousTokens: string[];
 
-recognizedTokens = 'ab?:+\\-*/()%^=<>!&|, .\'[]01'.split('');
+recognizedTokens = 'ab?:+\\-*/()%^=<>!&|, ."[]01'.split('');
 recognizedTokens.push('esc');
 recognizedTokens.push('()=>');
 recognizedTokens.push('a.a()');
@@ -39,7 +39,7 @@ recognizedTokens.push('\'esc\'');
 recognizedTokens.push('(\'esc\')');
 recognizedTokens.push('[\'esc\']');
 
-dangerousTokens = ' ?\\/()=,.\''.split('');
+dangerousTokens = ' ?\\/()=,."'.split('');
 dangerousTokens.push('esc');
 dangerousTokens.push('.constructor');
 dangerousTokens.push('\'esc\'');

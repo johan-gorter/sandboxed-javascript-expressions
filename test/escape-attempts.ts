@@ -18,7 +18,7 @@ describe('sandbox escape attempts', () => {
 
   it('is unable to get the constructor of a string constant', () => {
     expect(() => {
-      compileJsExpression(`''.constructor`);
+      compileJsExpression(`"".constructor`);
     }).to.throw();
   });
 

@@ -1,5 +1,4 @@
 # TODO
-- Switch to double quotes
 - Regex example
 
 # Sandboxed javascript expressions

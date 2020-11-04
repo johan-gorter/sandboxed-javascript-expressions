@@ -24,9 +24,9 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
     throw new Error(`Invalid char at: ${safeExpression}${char}`);
   };
   for (let char of expression) {
-    let backToClean = mode === 'word' ? '")' : '';
+    let backToClean = mode === 'word' ? '\')' : '';
     if (mode === 'string') {
-      if (char === '\'') {
+      if (char === '"') {
         mode = 'clean';
       } else if (char === '\\') {
         mode = 'escapedInString';
@@ -59,7 +59,7 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
       safeExpression += char;
     } else if ((char === '.') && (mode !== 'clean')) {
       // dots are potentially dangerous, they always need to be replaced
-      safeExpression += `${backToClean}.accessProperty("`;
+      safeExpression += `${backToClean}.accessProperty('`;
       mode = 'word';
     } else if (char === '[') {
       // another source of danger, replace these as well
@@ -89,12 +89,12 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
     } else {
       // mode === 'clean' || mode === 'cleanOrChain'
       if (isWord(char)) {
-        safeExpression += `interpret("${char}`;
+        safeExpression += `interpret('${char}`;
         mode = 'word';
       } else if (isDigit(char)) {
         safeExpression += char;
         mode = 'number';
-      } else if (char === '\'') {
+      } else if (char === '"') {
         safeExpression += char;
         mode = 'string';
       } else {
@@ -103,7 +103,7 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
     }
   }
   if (mode === 'word') {
-    safeExpression += '")';
+    safeExpression += '\')';
   } else if (mode !== 'clean' && mode !== 'cleanOrChain' && mode !== 'number' && mode !== 'decimalPart') {
     throw new Error(`Invalid end of expression: ${expression}`);
   }

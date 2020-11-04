@@ -21,7 +21,7 @@ describe('supported constructs', () => {
     ['obj[str][index]', 5],
     ['obj.c[0]', 4],
     ['[8, 9, 10][index]', 9],
-    ['obj[\'c\']', [4, 5]],
+    ['obj["c"]', [4, 5]],
     ['index ? undefined : 3', undefined],
     ['((index)) ? ([null, arr]) : 3', [null, [6, 7, 8]]]
   ];

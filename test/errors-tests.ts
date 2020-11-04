@@ -15,7 +15,7 @@ describe('errors', () => {
   });
 
   it('throws an error at runtime in case of a prohibited property accessor', () => {
-    let expression = '(\'a\').toString()';
+    let expression = '("a").toString()';
     let compiled = compileJsExpression(expression);
     expect(() => compiled({ getValue: noop, accessProperty: noop })).to.throw(TypeError);
   });

@@ -23,7 +23,7 @@ describe('examples', () => {
   });
 
   it('can even do parameter-less lambda\'s', () => {
-    let expression = `filter(items, 'item', () => item.value > 0)`;
+    let expression = `filter(items, "item", () => item.value > 0)`;
     let scope: { [variableOrFunctionName: string]: any } = {};
     let context = createDefaultJsExpressionContext(scope);
     scope.items = [{ value: 1 }, { value: -1 }, { value: 3 }];
@@ -64,7 +64,7 @@ describe('examples', () => {
   });
 
   it('can even evaluate hyperscript', () => {
-    let expression = `h('del', ['[Trashed]', description])`;
+    let expression = `h("del", ["[Trashed]", description])`;
     let scope = {
       h: (tagName: string, children: JsExpressionWrappedValue<string[]>) => ({ tagName, children: children.wrapped }),
       description: 'ItemDescription'
