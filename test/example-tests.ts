@@ -63,6 +63,17 @@ describe('examples', () => {
     expect(result).to.deep.equal({ num: 25, exp: 2 });
   });
 
+  it('can use regexes', () => {
+    let scope = {
+      testRegex: (pattern: string, input: string) => new RegExp(pattern).test(input),
+      input: '123'
+    };
+    let expression = `testRegex("\\d*", input)`;
+    let context = createDefaultJsExpressionContext(scope);
+    let result = compileJsExpression(expression)(context);
+    expect(result).to.be.true;
+  });
+
   it('can even evaluate hyperscript', () => {
     let expression = `h("del", ["[Trashed]", description])`;
     let scope = {
