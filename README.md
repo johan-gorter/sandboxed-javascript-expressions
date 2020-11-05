@@ -4,7 +4,7 @@ Allows evaluating untrusted javascript expressions in a nodejs server and in bro
 ### Usage
 ```js
 // Expressions are compiled to a function for optimum performance.
-let expression = compileJsExpression('Math.atan(deltaX / deltaY) * 180 / Math.PI'); // formula calculates an angle
+let expression = compileJsExpression('Math.atan(deltaX / deltaY) * 180 / Math.PI'); // calculate angle
 
 // Here we specify the only variables that we are going to expose to the expression.
 let scope = {
@@ -29,8 +29,8 @@ Only expressions are supported, so no assignments, code blocks, etc.
 - Custom functionality can be provided using helper functions and objects
 
 ### Some limitations:
-- String literals must use double quotes (no double quotes or interpolation)
-- Regular expressions cannot use the literal notation
-- Lambda functions cannot have parameters (see `example-tests.ts` on how to deal with this limitation)
+- String literals must use double quotes (no single quotes or interpolation).
+- Regular expressions cannot use the literal notation.
+- Lambda functions cannot have parameters (see `example-tests.ts` on how to deal with this limitation).
 - You cannot access functions on an object's prototype (like `"".substr(1)`). This is by design and you can use helper functions to access them.
-- Object literals are not yet supported. Support can be added easily if the keys require quotes (JSON style).
+- Object literals are not yet supported. Support can still be added easily if the keys require quotes (JSON style).
