@@ -13,6 +13,7 @@
     "assist": "tsa assist",
     "release": "tsa release",
     "fix": "tsa fix",
+    "fixall": "tsa fixall",
     "clean": "tsa clean",
     "ci": "tsa ci",
     "coverage-show": "opn build/coverage/index.html"
@@ -36,8 +37,8 @@
   },
   "homepage": "https://github.com/johan-gorter/sandboxed-javascript-expressions#readme",
   "devDependencies": {
-    "rollup": "2.21.0",
-    "typescript-assistant": "0.40.21"
+    "rollup": "2.53.1",
+    "typescript-assistant": "0.50.1"
   },
   "nyc": {
     "include": [
@@ -86,6 +87,12 @@
       "post-merge": "tsa post-merge || exit 0",
       "pre-commit": "tsa pre-commit",
       "pre-push": "npm run dist && tsa pre-push"
+    }
+  },
+  "importSort": {
+    ".js, .jsx, .ts, .tsx": {
+      "style": "module",
+      "parser": "typescript"
     }
   }
 }

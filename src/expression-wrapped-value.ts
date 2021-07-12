@@ -7,5 +7,5 @@ export interface JsExpressionWrappedValue<Wrapped> {
 }
 
 export let isJsExpressionWrappedValue = (obj: any): obj is JsExpressionWrappedValue<any> => {
-  return obj && obj.hasOwnProperty('wrapped') && obj.hasOwnProperty('accessProperty');
+  return obj && obj.hasOwnProperty("wrapped") && obj.hasOwnProperty("accessProperty");
 };

@@ -1,6 +1,12 @@
-import { CompiledJsExpression, compileJsExpression, createDefaultJsExpressionContext, JsExpressionContext } from '../src';
-import { logger } from './test-utilities';
-import { expect } from 'chai';
+import { expect } from "chai";
+
+import {
+  CompiledJsExpression,
+  JsExpressionContext,
+  compileJsExpression,
+  createDefaultJsExpressionContext,
+} from "../src";
+import { logger } from "./test-utilities";
 
 /* tslint:disable no-null-keyword */
 
@@ -8,16 +14,22 @@ import { expect } from 'chai';
  * Makes it easy to detect if the sandbox is broken. If malicious code cannot get to 'esc' than it will also not be able to get to
  * anything else that is sensitive.
  */
-export let setupEscape = () => {
-  let throwEscaped = () => { throw new Error('escaped'); };
+export let setupEscape = (): void => {
+  let throwEscaped = (): never => {
+    throw new Error("escaped");
+  };
   // putting 'esc' on Object.prototype makes it accessible from everywhere, even from global
-  Object.defineProperty(Object.prototype, 'esc', { get: throwEscaped, set: throwEscaped, configurable: true });
+  Object.defineProperty(Object.prototype, "esc", {
+    get: throwEscaped,
+    set: throwEscaped,
+    configurable: true,
+  });
   // these things now throw an 'escaped' Error:
   // new Function('esc')();
   // new Function('return \'a\'.esc')();
 };
 
-export let cleanupEscape = () => {
+export let cleanupEscape = (): void => {
   delete (Object.prototype as any).esc;
 };
 
@@ -31,57 +43,73 @@ export let recognizedTokens: string[];
  */
 export let dangerousTokens: string[];
 
-recognizedTokens = 'ab?:+\\-*/()%^=<>!&|, ."[]01'.split('');
-recognizedTokens.push('esc');
-recognizedTokens.push('()=>');
-recognizedTokens.push('a.a()');
-recognizedTokens.push('\'esc\'');
-recognizedTokens.push('(\'esc\')');
-recognizedTokens.push('[\'esc\']');
+recognizedTokens = 'ab?:+\\-*/()%^=<>!&|, ."[]01'.split("");
+recognizedTokens.push("esc");
+recognizedTokens.push("()=>");
+recognizedTokens.push("a.a()");
+recognizedTokens.push("'esc'");
+recognizedTokens.push("('esc')");
+recognizedTokens.push("['esc']");
 
-dangerousTokens = ' ?\\/()=,."'.split('');
-dangerousTokens.push('esc');
-dangerousTokens.push('.constructor');
-dangerousTokens.push('\'esc\'');
-dangerousTokens.push('(\'esc\')');
-dangerousTokens.push('[\'esc\']');
+dangerousTokens = ' ?\\/()=,."'.split("");
+dangerousTokens.push("esc");
+dangerousTokens.push(".constructor");
+dangerousTokens.push("'esc'");
+dangerousTokens.push("('esc')");
+dangerousTokens.push("['esc']");
 
 let scope: { [index: string]: any } = Object.create(null);
-scope['a'] = { a: () => 'esc', b: 'esc' };
-scope['b'] = 'esc';
+scope["a"] = { a: () => "esc", b: "esc" };
+scope["b"] = "esc";
 export let testContext: JsExpressionContext = createDefaultJsExpressionContext(scope);
 
-export let createTestSession = (context: JsExpressionContext) => {
+export interface Session {
+  run(expression: string): void;
+}
+
+export let createTestSession = (context: JsExpressionContext): Session => {
   // To log everything not more than once
-  let encounteredErrorMessages = new Set<string>();
-  let encounteredResults = new Set<object>();
+  let encounteredErrorMessages = new Set<unknown>();
+  let encounteredResults = new Set<unknown>();
 
   return {
     run: (expression: string) => {
       let compiled: CompiledJsExpression | undefined;
       try {
         compiled = compileJsExpression(expression);
-      } catch (invalidCharOrSyntaxError) { /* very likely */ }
+      } catch (invalidCharOrSyntaxError) {
+        /* very likely */
+      }
       if (compiled) {
         try {
           let result = compiled(context);
-          if (result && result.constructor !== RegExp && result.constructor !== Function && !encounteredResults.has(result)) {
+          if (
+            result &&
+            result.constructor !== RegExp &&
+            result.constructor !== Function &&
+            !encounteredResults.has(result)
+          ) {
             logger.info(`New result encountered: ${result}, expression: ${expression}`);
             encounteredResults.add(result);
           }
         } catch (err) {
-          expect(err.message).to.not.equal('escaped', expression);
+          expect(err.message).to.not.equal("escaped", expression);
           if (!encounteredErrorMessages.has(err.message)) {
             logger.info(`New error encountered: ${err.message}, expression: ${expression}`);
             encounteredErrorMessages.add(err.message);
           }
         }
       }
-    }
+    },
   };
 };
 
-export let forEachCombination = (tokens: string[], minLength: number, maxLength: number, callback: (combination: string) => void) => {
+export let forEachCombination = (
+  tokens: string[],
+  minLength: number,
+  maxLength: number,
+  callback: (combination: string) => void
+): void => {
   let testAll = (prefix: string, tokensToAdd: number) => {
     if (tokensToAdd === 0) {
       callback(prefix);
@@ -92,6 +120,6 @@ export let forEachCombination = (tokens: string[], minLength: number, maxLength:
     }
   };
   for (let length = minLength; length < maxLength; length++) {
-    testAll('', length);
+    testAll("", length);
   }
 };
