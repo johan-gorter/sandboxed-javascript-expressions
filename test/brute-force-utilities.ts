@@ -92,7 +92,7 @@ export let createTestSession = (context: JsExpressionContext): Session => {
             logger.info(`New result encountered: ${result}, expression: ${expression}`);
             encounteredResults.add(result);
           }
-        } catch (err) {
+        } catch (err: any) {
           expect(err.message).to.not.equal("escaped", expression);
           if (!encounteredErrorMessages.has(err.message)) {
             logger.info(`New error encountered: ${err.message}, expression: ${expression}`);

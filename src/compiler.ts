@@ -149,6 +149,10 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
     return result;
 
     function interpret(variableOrFunction: string) {
+      let reservedWordIndex = reservedWords.indexOf(variableOrFunction);
+      if (reservedWordIndex !== -1) {
+        return reservedValues[reservedWordIndex];
+      }
       let value = context.getValue(variableOrFunction);
       if (typeof value === "function") {
         return (...args: any[]) => wrapPropertyAccessors(value(...args));
@@ -169,3 +173,6 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
     }
   };
 };
+
+const reservedWords = ["true", "false", "null", "undefined"];
+const reservedValues = [true, false, null, undefined];

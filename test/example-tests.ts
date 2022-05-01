@@ -102,4 +102,18 @@ describe("examples", () => {
     let result = compileJsExpression(expression)(context);
     expect(result).to.deep.equal({ tagName: "del", children: ["[Trashed]", "ItemDescription"] });
   });
+
+  it("handles primitives", () => {
+    let context = createDefaultJsExpressionContext({});
+    let result = compileJsExpression("true")(context);
+    expect(result).to.be.true;
+    result = compileJsExpression("false")(context);
+    expect(result).to.be.false;
+    result = compileJsExpression("true === true")(context);
+    expect(result).to.be.true;
+    result = compileJsExpression("undefined")(context);
+    expect(result).to.be.undefined;
+    result = compileJsExpression("null")(context);
+    expect(result).to.be.null;
+  });
 });
