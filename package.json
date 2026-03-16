@@ -37,8 +37,14 @@
   },
   "homepage": "https://github.com/johan-gorter/sandboxed-javascript-expressions#readme",
   "devDependencies": {
-    "rollup": "3.28.1",
-    "typescript-assistant": "0.63.4"
+    "rollup": "3.30.0",
+    "typescript-assistant": "0.74.0"
+  },
+  "overrides": {
+    "diff": "8.0.3",
+    "serialize-javascript": "7.0.4",
+    "file-type": "21.3.2",
+    "tmp": "0.2.5"
   },
   "nyc": {
     "include": [
