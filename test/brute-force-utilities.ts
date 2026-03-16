@@ -77,7 +77,7 @@ export let createTestSession = (context: JsExpressionContext): Session => {
       let compiled: CompiledJsExpression | undefined;
       try {
         compiled = compileJsExpression(expression);
-      } catch (invalidCharOrSyntaxError) {
+      } catch {
         /* very likely */
       }
       if (compiled) {
