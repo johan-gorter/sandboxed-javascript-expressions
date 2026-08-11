@@ -1,4 +1,6 @@
-import pkg from './package.json';
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pkg = require("./package.json");
 
 // Typescript creates the commonJS package, let rollup do the rest
 
