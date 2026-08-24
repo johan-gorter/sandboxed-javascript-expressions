@@ -19,13 +19,8 @@ export type CompiledJsExpression = (context: JsExpressionContext) => any;
 
 export let compileJsExpression = (expression: string): CompiledJsExpression => {
   let mode:
-    | "clean"
-    | "cleanOrChain"
-    | "word"
-    | "string"
-    | "escapedInString"
-    | "number"
-    | "decimalPart" = "clean";
+    "clean" | "cleanOrChain" | "word" | "string" | "escapedInString" | "number" | "decimalPart" =
+    "clean";
   let safeExpression = "return ";
   let invalidChar = (char: string) => {
     throw new Error(`Invalid char at: ${safeExpression}${char}`);
