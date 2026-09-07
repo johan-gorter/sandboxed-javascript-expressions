@@ -1,3 +1,6 @@
+![NpmLicense](https://img.shields.io/npm/l/sandboxed-javascript-expressions.svg)
+![build](https://github.com/johan-gorter/sandboxed-javascript-expressions/actions/workflows/node.js.yml/badge.svg)
+
 # Sandboxed javascript expressions
 Allows evaluating untrusted javascript expressions in a nodejs server and in browsers
 
