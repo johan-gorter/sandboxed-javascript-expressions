@@ -1,0 +1,72 @@
+# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The versions supported by the `engines` field in package.json
+        node-version: [20.x, 22.x, 24.x]
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run ci
+      - name: Verify that the distribution can be built
+        run: npm -s run dist
+
+  # Only publish from pushes to master. On pull_request runs github.sha is an
+  # ephemeral merge commit, so publishing there tags a commit that is on no branch.
+  publish:
+    needs: ci
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: 'npm'
+      - run: npm ci
+      - name: Publish to NPM if version in package.json has changed
+        id: publish
+        uses: JS-DevTools/npm-publish@v4
+        with:
+          provenance: true
+      - name: Create tag
+        if: steps.publish.outputs.type
+        uses: actions/github-script@v9
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v${{ steps.publish.outputs.version }}',
+              sha: context.sha
+            })
+      - name: Create a Github Release when a version was published
+        if: steps.publish.outputs.type
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.publish.outputs.version }}
+          name: v${{ steps.publish.outputs.version }}
+          makeLatest: true
+
+permissions:
+  id-token: write
+  contents: write

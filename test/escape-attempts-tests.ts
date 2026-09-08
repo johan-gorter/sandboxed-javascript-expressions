@@ -1,6 +1,10 @@
 import { expect } from "chai";
 
-import { compileJsExpression, createDefaultJsExpressionContext } from "../src";
+import {
+  compileJsExpression,
+  createDefaultJsExpressionContext,
+  isJsExpressionWrappedValue,
+} from "../src";
 
 describe("sandbox escape attempts", () => {
   it("cannot access an object's constructor", () => {
@@ -28,6 +32,19 @@ describe("sandbox escape attempts", () => {
     expect(() => {
       compiled(createDefaultJsExpressionContext({ a: "a" }));
     }).to.throw();
+  });
+
+  it("cannot use an own hasOwnProperty implementation to leak the constructor", () => {
+    let compiled = compileJsExpression("evil.constructor");
+    // `evil` claims to own every property that is asked for
+    let evil = { hasOwnProperty: () => true };
+    let result = compiled(createDefaultJsExpressionContext({ evil }));
+    expect(result).to.be.undefined;
+  });
+
+  it("cannot use an own hasOwnProperty implementation to pose as a wrapped value", () => {
+    let evil = { hasOwnProperty: () => true };
+    expect(isJsExpressionWrappedValue(evil)).to.be.false;
   });
 
   it("is unable to pollute global scope", () => {
