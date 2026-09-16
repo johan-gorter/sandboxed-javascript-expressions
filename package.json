@@ -2,11 +2,27 @@
   "name": "sandboxed-javascript-expressions",
   "version": "0.11.1",
   "description": "Allows evaluating untrusted javascript expressions in a nodejs server and in browsers",
-  "module": "./dist/index.js",
   "main": "./dist/sandboxed-javascript-expressions.cjs.js",
+  "module": "./dist/index.mjs",
   "browser": "./dist/sandboxed-javascript-expressions.umd.js",
-  "typings": "./dist/index.d.ts",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/sandboxed-javascript-expressions.umd.js",
+      "import": "./dist/index.mjs",
+      "require": "./dist/sandboxed-javascript-expressions.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
+    "prepare": "husky",
     "test": "tsa ci",
     "dist": "tsc -p ./src/tsconfig.json && rollup -c",
     "prepublishOnly": "tsa clean && npm -s run dist",
@@ -37,6 +53,7 @@
   },
   "homepage": "https://github.com/johan-gorter/sandboxed-javascript-expressions#readme",
   "devDependencies": {
+    "husky": "9.1.7",
     "rollup": "4.62.5",
     "typescript-assistant": "0.74.0"
   },
@@ -93,14 +110,6 @@
         75,
         100
       ]
-    }
-  },
-  "husky": {
-    "hooks": {
-      "post-checkout": "tsa post-checkout || exit 0",
-      "post-merge": "tsa post-merge || exit 0",
-      "pre-commit": "tsa pre-commit",
-      "pre-push": "npm run dist && tsa pre-push"
     }
   },
   "importSort": {

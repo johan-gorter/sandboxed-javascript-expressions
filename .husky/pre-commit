@@ -1,0 +1,2 @@
+# Checks the formatting and linting of the changed files, see `npm run fix` to fix findings.
+npx tsa pre-commit

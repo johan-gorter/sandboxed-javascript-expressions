@@ -16,12 +16,16 @@ export interface JsExpressionContext {
   accessProperty(on: any, propertyName: string): any;
 }
 
+// Never call `on.hasOwnProperty(...)`, an object in the scope can define its own `hasOwnProperty`
+// which always returns true and thereby leak things like `constructor` to the expression.
+let hasOwnProperty = Object.prototype.hasOwnProperty;
+
 export let createDefaultJsExpressionContext = (scope: {
   [index: string]: any;
 }): JsExpressionContext => {
   return {
     getValue: (variableOrFunctionName) => scope[variableOrFunctionName],
     accessProperty: (on: any, propertyName: string) =>
-      on && on.hasOwnProperty(propertyName) ? on[propertyName] : undefined,
+      on && hasOwnProperty.call(on, propertyName) ? on[propertyName] : undefined,
   };
 };

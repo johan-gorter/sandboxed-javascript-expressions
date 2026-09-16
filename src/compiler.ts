@@ -115,6 +115,9 @@ export let compileJsExpression = (expression: string): CompiledJsExpression => {
     throw new Error(`Invalid end of expression: ${expression}`);
   }
 
+  // The Function constructor is what makes this library fast. Only `safeExpression` is passed to it,
+  // which was built up character by character above and can only reference `interpret` and `createArray`.
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval
   let executeFunction = new Function("interpret", "createArray", safeExpression);
 
   return (context) => {
