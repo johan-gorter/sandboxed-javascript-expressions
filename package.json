@@ -54,7 +54,7 @@
   "homepage": "https://github.com/johan-gorter/sandboxed-javascript-expressions#readme",
   "devDependencies": {
     "husky": "9.1.7",
-    "rollup": "4.62.5",
+    "rollup": "4.63.1",
     "typescript-assistant": "0.74.0"
   },
   "overrides": {
